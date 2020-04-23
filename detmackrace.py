@@ -12,7 +12,7 @@ chrome_options.add_argument('--no-sandbox')
 driver.get("https://www.bycmack.com/main_results.cfm")
 years = driver.find_elements_by_xpath("/html/body/table[2]/tbody/tr/td/div/table/tbody/tr/td[7]/div/table/tbody/tr/td")
 # for yr in years[i].text:
-# 	print(yr)
+#   print(yr)
 # initialize array to hold urls for race results by years
 race_rslts_urls = []
 for i in range(1, len(years)):
@@ -34,7 +34,12 @@ print(rc_year.text)
 
 # find and printrows of race results by entry / boat
 rows = driver.find_elements_by_xpath("/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr")
-for i in range(1, len(rows)):
+# iterate over rows in results page
+for i in range(3, 100):
     print(rows[i].text)
-
+    sail_path = '/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr[' +str(i) + ']/td[2]'
+    sail = driver.find_element_by_xpath(sail_path)
+    boat_name_path = '/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr[' +str(i) + ']/td[3]'
+    boat_name = driver.find_element_by_xpath(boat_name_path)
+    print(int(rc_year.text[:4]),' ',sail.text,' ',boat_name.text)
 driver.close()
