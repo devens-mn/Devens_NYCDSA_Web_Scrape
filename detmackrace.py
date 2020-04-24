@@ -36,21 +36,28 @@ print(rc_year.text)
 rows = driver.find_elements_by_xpath("/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr")
 # iterate over rows in results page, if start at 1 get error, 2nd row is column names
 for i in range(2, 100): # just do smallish number for now to avoid long waits with selenium
-    # print(rows[i].text)
-    sail_path = '/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr[' +str(i) + ']/td[2]'
-    sail = driver.find_element_by_xpath(sail_path)
-    boat_name_path = '/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr[' +str(i) + ']/td[3]'
-    boat_name = driver.find_element_by_xpath(boat_name_path)
-    finish_time_path = '/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr[' +str(i) + ']/td[5]'
-    finish_time = driver.find_element_by_xpath(finish_time_path)
-    elapse_time_path = '/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr[' +str(i) + ']/td[6]'
-    elapse_time = driver.find_element_by_xpath(elapse_time_path)
-    corrected_time_path = '/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr[' +str(i) + ']/td[7]'
-    corrected_time = driver.find_element_by_xpath(corrected_time_path)
-    class_path = '/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr[' +str(i) + ']/td[8]'
-    boat_class = driver.find_element_by_xpath(class_path)
-    div_plc_path = '/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr[' +str(i) + ']/td[9]'
-    div_plc = driver.find_element_by_xpath(div_plc_path)
-    print(int(rc_year.text[:4]),' ',sail.text,' ',boat_name.text, ' ',finish_time.text,' ',\
-        elapse_time.text, ' ', corrected_time.text, ' ',boat_class.text,' ',div_plc.text)
+    # don't collect column header row (sail no = sail)
+    # put in try to eliminate mistakes due to misformatting
+    try:
+        sail_path = '/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr[' +str(i) + ']/td[2]'
+        sail = driver.find_element_by_xpath(sail_path)
+        if sail.text != 'Sail':
+            boat_name_path = '/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr[' +str(i) + ']/td[3]'
+            boat_name = driver.find_element_by_xpath(boat_name_path)
+            finish_time_path = '/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr[' +str(i) + ']/td[5]'
+            finish_time = driver.find_element_by_xpath(finish_time_path)
+            elapse_time_path = '/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr[' +str(i) + ']/td[6]'
+            elapse_time = driver.find_element_by_xpath(elapse_time_path)
+            corrected_time_path = '/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr[' +str(i) + ']/td[7]'
+            corrected_time = driver.find_element_by_xpath(corrected_time_path)
+            class_path = '/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr[' +str(i) + ']/td[8]'
+            boat_class = driver.find_element_by_xpath(class_path)
+            div_plc_path = '/html/body/table[2]/tbody/tr/td/table/tbody/tr/td/div/table/tbody/tr[' +str(i) + ']/td[9]'
+            div_plc = driver.find_element_by_xpath(div_plc_path)
+            print(int(rc_year.text[:4]),' ',sail.text,' ',boat_name.text, ' ',finish_time.text,' ',\
+            elapse_time.text, ' ', corrected_time.text, ' ',boat_class.text,' ',div_plc.text)
+        else:
+            continue
+    except:
+        continue
 driver.close()
