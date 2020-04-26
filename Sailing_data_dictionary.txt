@@ -1,0 +1,35 @@
+The detmackraceresults.py scraping script produces detmacraceresults.csv, which has:
+'Division_course': string, the race division and course combined into one string.  The course namin nomenclature changed over the years, as did the number of divisions.
+
+'Year': integer, the race year from which the results come
+
+'Sail_No': string, the identification number on the sail of the boat, unique to boat
+
+'Boat_name': string, the boat name, not necessarily unique 
+
+'Finish_time': string, the day and time the boat finished the race
+
+'Elapsed_Time': string, the time from when the boat crossed the start line to when it crosses the finish line.  This an unadjusted finish time.
+
+'Corrected_Time': string, the adjusted time after the boat handicap has been applied to the elapsed time.  We also call this adjusted time.
+
+'Boat_class': string, the boat design subgroup within division.  These changed greatly over the years
+
+'Division_placing': string, the division place awarded to the boat based on the Corrected Time.
+
+
+
+The Detmacrace_clean.py module retains the original columns from detmacraceresults.csv and produces a dataframe which has the new columns:
+'cln_elps_tm': string, format is hh:mm:ss, is the 'Elapsed_Time' column without alphabetic disqualification codes (DNF, DNS, Retired removed)
+
+'cln_crrct_tm': string, format is hh:mm:ss, is the 'Corrected_Time' column without alphabetic disqualification codes (DNF, DNS, Retired removed)
+
+'hh', 'mm', 'ss': float, dummy column to store string to numeric conversions for time fields from 'Elapsed_Time' and 'Corrected_Time'
+
+'cln_elps_tm_sec': float, 'cln_elps_tm' converted to seconds for calculations.  Referred to as Elapsed time in notebook.
+
+'cln_crrct_tm_sec': float, 'cln_crrct_tm' converted to seconds for calculations.  Referred to as Adjusted finish time in notebook.
+
+'crctn_in_sec': float, 'cln_crrct_tm_sec' subtracted from 'cln_elps_tm_sec', so a negative time means time was added to elapsed time to get adjusted finish time. Referred to as 'Handicap time' in notebook.
+
+'Division_only': string, division only, taken from 'Division_course' since course naming nomenclature changed over years.

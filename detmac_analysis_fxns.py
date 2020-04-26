@@ -9,6 +9,7 @@ def histo_plot(dataframe_name, input_column):
     #import necessary libraries
     from matplotlib import pyplot as plt
     plt.style.use('ggplot')
+
     # determine which time is to be plotted
     if input_column == 'Elapsed time':
         label_strng = 'cln_elps_tm_sec'
@@ -132,6 +133,7 @@ def sail_anva_byyr(dataframe_name, input_column, Yr1, Yr2, Yr3):
     input 1st arg is dataframe must be winsorized data
     input 2nd arg string column name must be variable: 'Elapsed time', 'Adjusted finish time', 'Handicap time'
     input 3rd, 4th, 5th arg are integers for years of analysis
+    output is a printed p-value of the anova test
     '''
     # import stats library
     from scipy import stats
@@ -223,7 +225,9 @@ def sail_scttr_plot_sbst(dataframe_name, x_column, y_column, Sbslc1, Sbslc1val, 
         raise IOError('Invalid subset1 column selection')
 
     # determine which subset2 column to use
-    if Sbslc2 == None:
+    if Sbslc2 not in [None, 'Year','Boat class','Boat division']:
+        raise IOError('Invalid subset2 column selection')
+    elif Sbslc2 == None:
         Sbslc2_strng = None
     if Sbslc2 == 'Year':
         Sbslc2_strng = 'Year'
@@ -231,8 +235,6 @@ def sail_scttr_plot_sbst(dataframe_name, x_column, y_column, Sbslc1, Sbslc1val, 
         Sbslc2_strng = 'Boat_class'
     elif Sbslc2 == 'Boat division':
         Sbslc2_strng = 'Division_only'
-    else:
-        raise IOError('Invalid subset2 column selection')
 
     #create title for plot
     title_strng = y_column + ' vs ' + x_column + ' for yrs 2002-2019'
@@ -252,6 +254,14 @@ def sail_scttr_plot_sbst(dataframe_name, x_column, y_column, Sbslc1, Sbslc1val, 
 
 # function to calculate regressions over all years for Division 1 boats
 def yr_rgrss_fxn(dataframe_name, x_column, y_column, sample_no):
+    '''
+    performs linear regression on input variables of input dataframe
+    input 1: data frame on which to perform regression, must be winsorized
+    input 2nd arg is string column name must be variable: 'Elapsed time', 'Adjusted finish time', 'Handicap time'
+    input 3rd arg is string column name must be variable: 'Elapsed time', 'Adjusted finish time', 'Handicap time'
+    input 4th arg is integer for number of iterations over which to average r coeff from regression
+    output is line plot with r-values between x,y inputs for each race year
+    '''
     #import required modules
     from matplotlib import pyplot as plt
     plt.style.use('ggplot')
@@ -315,7 +325,90 @@ def yr_rgrss_fxn(dataframe_name, x_column, y_column, sample_no):
     plt.show()
     pass
 
+# function to count number of disqualifications, grouped by year
+def disqual_count(dataframe_name, disqual_type):
+    '''
+    function to count number of disqualifications of each type for each race year.  These are
+        counts and the same across all original time columns as pulled
+    input 1st arg: dataframe name, MUST NOT BE WINSORIZED
+    input 2nd arg: string value of disqual, must be one of: 'DNF' for Did Not Finish, 'DNS' for Did Not Start or 'Retired'
+    output is a bar plot
+    '''
+    #import necessary libraries
+    from matplotlib import pyplot as plt
+    plt.style.use('ggplot')
 
+    # determine which time is to be plotted
+    if disqual_type not in ['DNF', 'DNS', 'Retired']:
+        raise IOError('Disqualification type not valid')
+    else:
+        ylblstrng = 'Boats that ' + disqual_type
+        title_strng = 'Detroit-Mackinac boats that ' + disqual_type + ' All divisions 2002-2019' 
+        dataframe_name[dataframe_name['Elapsed_Time'] == disqual_type].groupby('Year')['Elapsed_Time'].count().\
+        plot.bar(color='b')
+        plt.xlabel('Race year')
+        plt.ylabel(ylblstrng)
+        plt.title(title_strng, fontsize=16)
+    pass
+
+# function to calculate time per input column by division by year
+def  mean_by_div(dataframe_name, divsn, input_column):
+    '''
+    function to calculate and plot aggregate fxn of times by year and division
+    input 1st arg: dataframe name, must be winsorized data
+    input 2nd arg: string divion name in ['Division I -', 'Division II ', 'Division III', 'Division IV ','Division V -']
+    input 3rd arg: string column name must be variable: 'Elapsed time', 'Adjusted finish time', 'Handicap time'
+    output is bar plot
+    '''
+    #import necessary libraries
+    from matplotlib import pyplot as plt
+    plt.style.use('ggplot')
+
+    # determine which time is to be plotted
+    if input_column == 'Elapsed time':
+        label_strng = 'cln_elps_tm_sec'
+    elif input_column == 'Adjusted finish time':
+        label_strng = 'cln_crrct_tm_sec'
+    elif input_column == 'Handicap time':
+        label_strng = 'crctn_in_sec'
+    else:
+        raise IOError('Invalid time column selection')
+
+    # determine if divsn is correct
+    if divsn not in ['Division I -', 'Division II ', 'Division III', 'Division IV ','Division V -']:
+        raise IOError('Invalid division selection')
+    else:
+        # render plot for aggregate function
+        ylblstrng = 'Mean ' + input_column
+        title_strng = 'Detroit-Mackinac race ' + ylblstrng +' ' + divsn + ' 2002-2019'
+        dataframe_name[dataframe_name['Division_only']==divsn].groupby('Year')[label_strng].mean()\
+            .plot.bar(color='b')
+        plt.xlabel('Race year')
+        plt.ylabel(ylblstrng)
+        plt.title(title_strng, fontsize=16)
+
+    pass
+
+# function to calculate time per input column by division by year
+def  entry_count(dataframe_name):
+    '''
+    function to calculate and plot aggregate fxn of times by year and division
+    input 1st arg: dataframe name, MUST NOT BE WINSORIZED data
+    input 2nd arg: string divion name in ['Division I -', 'Division II ', 'Division III', 'Division IV ','Division V -']
+    input 3rd arg: string column name must be variable: 'Elapsed time', 'Adjusted finish time', 'Handicap time'
+    output is bar plot
+    '''
+    #import necessary libraries
+    from matplotlib import pyplot as plt
+    plt.style.use('ggplot')
+
+    # render plot for aggregate function
+    dataframe_name.groupby('Year')['Elapsed_Time'].count().plot.bar(color='b')
+    plt.xlabel('Race year')
+    plt.ylabel('Boats finishing')
+    plt.title('Detroit-Mackinac entrants 2002-2019', fontsize=16)
+
+    pass
 
 
 
