@@ -1,0 +1,55 @@
+---
+title: "sailing handicaps"
+output: html_document
+---
+We use the dplyr and tidyverse libraries, so we import those.
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tidyverse)
+```
+
+## Data reading, cleanup and manipulation
+We set our working directory to where our data are, and then read them in.
+```{r cars}
+setwd("~/opt/python_in_class/Selenium/Devens_NYCDSA_Web_Scrape/Devens_NYCDSA_Web_Scrape")
+ORRratings = read.csv("orr_mrg_nmrc.csv", stringsAsFactors = FALSE)
+```
+
+## Correlations
+Here examine the correlation between each of the measurement values and the deviation from the adjusted finish mean.  We create a separate table of the correlations.
+
+```{r}
+library(corrr)
+sailcrrln = ORRratings %>% correlate() %>% focus(Deviation_sec)
+view(sailcrrln)
+```
+The measurement variables with the highest correlations are: displacement in measured trim, displacement in sail trim, the area wetted along the hull, the righting moment at 60 degrees heel, the area of the genoa sail (a large jib) and the rated length of the full.  All of these are measures of the size of the boat, so may be correlated with each other (longer boat as measured by LOA may also have a larger displacement.)  We examine the correlation of each with the other.
+
+```{r}
+cor(ORRratings[c('Disp.MT','Disp.ST','J','Wet.Area','RM60','AGenoa','Rated.LOA')])
+```
+In fact we see that many of the variables are strongly correlated, such as displacement while in measurement trim and displacement in sail trim (r > 0.998.)  We focus our attention on rated LOA, the displacement in measurement trim since those have the lowest correlations with each other, though the correlation is still strong at approximately 75%.
+Next we plot the dependence of the deviation from the mean as a function of measured trim displacement and the rated LOA. We see a weak negative dependence of deviation on the measured trim displacement and the rated LOA, 
+```{r}
+ggplot(ORRratings, aes(x = Disp.MT, y = Deviation_sec)) + geom_point()
+ggplot(ORRratings, aes(x = Rated.LOA, y = Deviation_sec)) + geom_point()
+```
+
+These dependencies don't appear strong, so we examine their significance in a linear regression model.
+
+```{r}
+linearmod = lm(Deviation_sec ~ Disp.MT + Rated.LOA, data = ORRratings)
+summary(linearmod)
+```
+The only significant parameter is the measured trim displacement, so we reduce the model to have only that independent variable.
+```{r}
+linearmod2 = lm(Deviation_sec ~ Disp.MT, data = ORRratings)
+summary(linearmod2)
+```
+Note that while Disp.MT is significant (p<2e-11), and the model itself is significant (p also < 2e-11) the model explains very little of the observed variation (adjusted r squared 4.2%.)  However, the effect due to the disp.MT is still noticeable.
+```{r}
+summary(ORRratings$Disp.MT)
+```
+Multiplying the difference between the maximum and minimum values of disp.MT by the modeled coefficient (-1.1872) shows a difference of 36,000 or 10 hrs between the largest and smallest boats.  This would clearly be significant in races that are decided by minutes.
+
